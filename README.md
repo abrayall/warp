@@ -1,6 +1,6 @@
 # Warp - Website Modernization Tool
 
-Warp takes any existing website, scrapes it, modernizes the design and content using AI, and deploys it via [lightspeed](https://github.com/abrayall/lightspeed).
+Warp takes any existing website, scrapes it, modernizes the design and content using AI, and previews it locally via [lightspeed](https://github.com/abrayall/lightspeed).
 
 ```
  █   █ █▀▀█ █▀▀█ █▀▀█
