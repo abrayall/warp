@@ -1,4 +1,4 @@
-# Warp
+# Warp - Website Modernization Tool
 
 Warp takes any existing website, scrapes it, modernizes the design and content using AI, and deploys it via [lightspeed](https://github.com/abrayall/lightspeed).
 
@@ -19,13 +19,15 @@ Warp runs a three-phase pipeline:
 ## Install
 
 ```bash
-go install ./framework/cli
+curl -sfL https://raw.githubusercontent.com/abrayall/warp/main/install.sh | sh
 ```
 
-Or build locally:
+Or build from source:
 
 ```bash
-go build -o warp ./framework/cli
+git clone git@github.com:abrayall/warp.git
+cd warp
+./install.sh
 ```
 
 ## Usage

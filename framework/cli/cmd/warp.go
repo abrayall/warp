@@ -128,34 +128,37 @@ func runWarp(cmd *cobra.Command, args []string) {
 
 		sp := ui.NewSpinner("Starting lightspeed server...")
 
+		// Stop any existing container first
+		stopCmd := exec.Command("lightspeed", "stop")
+		stopCmd.Dir = siteDir
+		stopCmd.CombinedOutput() // ignore errors
+
 		startCmd := exec.Command("lightspeed", "start")
 		startCmd.Dir = siteDir
 
 		output, err := startCmd.CombinedOutput()
 		sp.Finish()
 
+		outputStr := string(output)
+
 		if err != nil {
-			fmt.Println(string(output))
-			ui.PrintError("Preview failed: %s", err)
-			os.Exit(1)
+			// Check if it's just "already running"
+			if strings.Contains(outputStr, "already running") {
+				ui.PrintWarning("Server already running")
+			} else {
+				ui.PrintError("Preview failed: %s", err)
+				os.Exit(1)
+			}
 		}
 
 		// Parse output for the URL
-		lines := strings.Split(string(output), "\n")
-		for _, line := range lines {
+		for _, line := range strings.Split(outputStr, "\n") {
 			if strings.Contains(line, "http://localhost") || strings.Contains(line, "http://127.0.0.1") {
-				// Extract URL from the line
 				for _, word := range strings.Fields(line) {
 					if strings.HasPrefix(word, "http://") {
 						ui.PrintSuccess("Site running at %s", word)
 						break
 					}
-				}
-			}
-			if strings.Contains(line, "Container:") || strings.Contains(line, "container") {
-				trimmed := strings.TrimSpace(line)
-				if trimmed != "" {
-					ui.PrintKeyValue("  Container", strings.TrimSpace(strings.SplitN(trimmed, ":", 2)[len(strings.SplitN(trimmed, ":", 2))-1]))
 				}
 			}
 		}
