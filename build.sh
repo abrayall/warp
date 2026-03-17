@@ -1,26 +1,68 @@
 #!/bin/bash
-set -e
+
+# Warp Build Script
+# Builds the warp CLI tool for multiple platforms
+
+set -e  # Exit on error
+
+echo "=============================================="
+echo "Warp Build"
+echo "=============================================="
+echo ""
+
+# Colors for output
+GREEN='\033[38;2;39;201;63m'
+BLUE='\033[38;2;59;130;246m'
+NC='\033[0m' # No Color
+
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Build directory
+BUILD_DIR="$SCRIPT_DIR/build"
+
+# Clean previous build
+echo -e "${BLUE}Cleaning previous build...${NC}"
+rm -rf "$BUILD_DIR"
+mkdir -p "$BUILD_DIR"
 
 # Get version using vermouth
+echo -e "${BLUE}Reading version from git tags...${NC}"
 VERSION=$(vermouth 2>/dev/null || curl -sfL https://raw.githubusercontent.com/abrayall/vermouth/refs/heads/main/vermouth.sh | sh -)
 
-LDFLAGS="-X warp/framework/cli/cmd.Version=${VERSION}"
+echo -e "${GREEN}Building version: ${VERSION}${NC}"
+echo ""
 
-echo "Building warp ${VERSION}..."
+# Build for multiple platforms
+PLATFORMS=("darwin/amd64" "darwin/arm64" "linux/amd64" "linux/arm64" "windows/amd64")
 
-# Build for current platform
-go build -ldflags "${LDFLAGS}" -o warp ./framework/cli
+for PLATFORM in "${PLATFORMS[@]}"; do
+    GOOS="${PLATFORM%/*}"
+    GOARCH="${PLATFORM#*/}"
 
-echo "Built: ./warp"
+    OUTPUT_NAME="warp-${VERSION}-${GOOS}-${GOARCH}"
+    if [ "$GOOS" = "windows" ]; then
+        OUTPUT_NAME="${OUTPUT_NAME}.exe"
+    fi
 
-# Cross-compile if requested
-if [ "$1" = "--all" ]; then
-    mkdir -p dist
+    echo -e "${BLUE}Building ${GOOS}/${GOARCH}...${NC}"
 
-    GOOS=darwin GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o dist/warp-darwin-amd64 ./framework/cli
-    GOOS=darwin GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o dist/warp-darwin-arm64 ./framework/cli
-    GOOS=linux GOARCH=amd64 go build -ldflags "${LDFLAGS}" -o dist/warp-linux-amd64 ./framework/cli
-    GOOS=linux GOARCH=arm64 go build -ldflags "${LDFLAGS}" -o dist/warp-linux-arm64 ./framework/cli
+    GOOS=$GOOS GOARCH=$GOARCH go build \
+        -ldflags "-X warp/framework/cli/cmd.Version=${VERSION}" \
+        -o "$BUILD_DIR/$OUTPUT_NAME" \
+        ./framework/cli
 
-    echo "Cross-compiled binaries in dist/"
-fi
+    echo -e "${GREEN}✓ Created: ${OUTPUT_NAME}${NC}"
+    echo ""
+done
+
+# Summary
+echo ""
+echo "=============================================="
+echo -e "${GREEN}Build Complete!${NC}"
+echo "=============================================="
+echo ""
+echo "Artifacts created in build/:"
+ls -1 "$BUILD_DIR"
+echo ""
