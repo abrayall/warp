@@ -86,7 +86,9 @@ download_release() {
     echo "" >&2
 
     # Construct download URL
-    FILENAME="warp-${OS}-${ARCH}"
+    # Strip leading 'v' from tag for filename
+    VER="${LATEST#v}"
+    FILENAME="warp-${VER}-${OS}-${ARCH}"
     URL="https://github.com/${REPO}/releases/download/${LATEST}/${FILENAME}"
 
     # Create temp directory
