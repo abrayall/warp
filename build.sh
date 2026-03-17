@@ -41,7 +41,7 @@ for PLATFORM in "${PLATFORMS[@]}"; do
     GOOS="${PLATFORM%/*}"
     GOARCH="${PLATFORM#*/}"
 
-    OUTPUT_NAME="warp-${VERSION}-${GOOS}-${GOARCH}"
+    OUTPUT_NAME="warp-${GOOS}-${GOARCH}"
     if [ "$GOOS" = "windows" ]; then
         OUTPUT_NAME="${OUTPUT_NAME}.exe"
     fi
